@@ -1,0 +1,50 @@
+{
+    "version": "2",
+    "volumes": {
+        "postgres_data": {},
+        "mysql_data": {}
+    },
+    "services": {
+        "postgres": {
+            "image": "postgres:alpine",
+            "volumes": [
+                "postgres_data:/var/lib/postgresql/data"
+            ]
+        },
+        "mysql": {
+            "image": "mysql",
+            "environment": {
+                "MYSQL_ALLOW_EMPTY_PASSWORD": "true"
+            },
+            "volumes": [
+                "mysql_data:/var/lib/mysql"
+            ]
+        },
+        "php-fpm": {
+            "build": {
+                "context": ".",
+                "dockerfile": "Dockerfile-php-fpm"
+            },
+            "volumes": [
+                "./app:/var/www/hpmr"
+            ],
+            "depends_on": [
+                "postgres",
+                "mysql"
+            ]
+        },
+        "nginx": {
+            "image": "nginx:alpine",
+            "volumes": [
+                "./app:/var/www/hpmr",
+                "./nginx.php-fpm.conf:/etc/nginx/nginx.conf:ro"
+            ],
+            "ports": [
+                "8080:80"
+            ],
+            "depends_on": [
+                "php-fpm"
+            ]
+        }
+    }
+}
