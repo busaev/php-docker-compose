@@ -1,0 +1,4 @@
+mysql_data/*
+!mysql_data/.gitkeep
+postgres_data/*
+!postgres_data/.gitkeep
