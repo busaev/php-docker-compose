@@ -2,42 +2,61 @@
     "version": "2",
     "volumes": {
         "postgres_data": {},
-        "mysql_data": {}
+        "mysql_data": {},
+        "mongo_data": {},
     },
     "services": {
         "postgres": {
             "image": "postgres:alpine",
             "volumes": [
-                "postgres_data:/var/lib/postgresql/data"
-            ]
+                "./database/postgres_data:/var/lib/postgresql/data"
+            ],
+            "environment": {
+                "POSTGRES_PASSWORD": "app_pass",
+                "POSTGRES_USER": "app_user"
+            }
         },
         "mysql": {
             "image": "mysql",
             "environment": {
-                "MYSQL_ALLOW_EMPTY_PASSWORD": "true"
+                "MYSQL_ROOT_PASSWORD": "app_root_pass",
+                "MYSQL_PASSWORD": "app_pass",
+                "MYSQL_USER": "app_user"
             },
             "volumes": [
-                "mysql_data:/var/lib/mysql"
+                "./database/mysql_data:/var/lib/mysql"
+            ]
+        },
+        'mongo': {
+            "image": "mongo",
+            "ports": [
+                "27017:27017"
+            ],
+            "volumes": [
+                "./database/mongo_data:/data/db"
             ]
         },
         "php-fpm": {
             "build": {
                 "context": ".",
-                "dockerfile": "Dockerfile-php-fpm"
+                "dockerfile": "./fpm/Dockerfile"
             },
             "volumes": [
                 "./app:/var/www/hpmr"
             ],
             "depends_on": [
                 "postgres",
-                "mysql"
+                "mysql",
+                "mongo"
             ]
         },
         "nginx": {
-            "image": "nginx:alpine",
+            "build": {
+                "context": ".",
+                "dockerfile": "./nginx/Dockerfile"
+            },
             "volumes": [
-                "./app:/var/www/hpmr",
-                "./nginx.php-fpm.conf:/etc/nginx/nginx.conf:ro"
+                "./app:/var/www/app",
             ],
             "ports": [
                 "8080:80"
