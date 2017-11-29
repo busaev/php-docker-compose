@@ -12,3 +12,7 @@ RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
     && chmod +x composer.phar \
     && mv composer.phar /usr/local/bin/composer
 
+#symfony
+RUN mkdir -p /usr/local/bin \
+    && curl -LsS https://symfony.com/installer -o /usr/local/bin/symfony \
+    && chmod a+x /usr/local/bin/symfony
