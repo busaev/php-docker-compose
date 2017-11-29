@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y nodejs build-essential
 RUN npm install gulp-cli -g
 RUN npm install gulp -D
 
-WORKDIR /var/www/app
+WORKDIR /var/www/site
 
 
 CMD service nginx start

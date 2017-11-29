@@ -42,7 +42,7 @@
                 "dockerfile": "./fpm/Dockerfile"
             },
             "volumes": [
-                "./app:/var/www/hpmr"
+                "./app:/var/www/site"
             ],
             "depends_on": [
                 "postgres",
@@ -56,7 +56,7 @@
                 "dockerfile": "./nginx/Dockerfile"
             },
             "volumes": [
-                "./app:/var/www/app",
+                "./app:/var/www/site",
             ],
             "ports": [
                 "8080:80"
