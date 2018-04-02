@@ -1,69 +1,73 @@
-{
-    "version": "2",
-    "volumes": {
-        "postgres_data": {},
-        "mysql_data": {},
-        "mongo_data": {},
-    },
-    "services": {
-        "postgres": {
-            "image": "postgres:alpine",
-            "volumes": [
-                "./database/postgres_data:/var/lib/postgresql/data"
-            ],
-            "environment": {
-                "POSTGRES_PASSWORD": "app_pass",
-                "POSTGRES_USER": "app_user"
-            }
-        },
-        "mysql": {
-            "image": "mysql",
-            "environment": {
-                "MYSQL_ROOT_PASSWORD": "app_root_pass",
-                "MYSQL_PASSWORD": "app_pass",
-                "MYSQL_USER": "app_user"
-            },
-            "volumes": [
-                "./database/mysql_data:/var/lib/mysql"
-            ]
-        },
-        'mongo': {
-            "image": "mongo",
-            "ports": [
-                "27017:27017"
-            ],
-            "volumes": [
-                "./database/mongo_data:/data/db"
-            ]
-        },
-        "php-fpm": {
-            "build": {
-                "context": ".",
-                "dockerfile": "./fpm/Dockerfile"
-            },
-            "volumes": [
-                "./app:/var/www/site"
-            ],
-            "depends_on": [
-                "postgres",
-                "mysql",
-                "mongo"
-            ]
-        },
-        "nginx": {
-            "build": {
-                "context": ".",
-                "dockerfile": "./nginx/Dockerfile"
-            },
-            "volumes": [
-                "./app:/var/www/site",
-            ],
-            "ports": [
-                "8080:80"
-            ],
-            "depends_on": [
-                "php-fpm"
-            ]
-        }
-    }
-}
+###############################################################################
+#                          Generated on phpdocker.io                          #
+###############################################################################
+version: "3.1"
+services:
+
+    memcached:
+      image: memcached:alpine
+      container_name: ib-memcached
+
+    mailhog:
+      image: mailhog/mailhog:latest
+      container_name: ib-mailhog
+      ports:
+        - "8081:8025"
+
+    redis:
+      image: redis:alpine
+      container_name: ib-redis
+
+    mysql:
+      image: mysql:8.0
+      container_name: ib-mysql
+      working_dir: /application
+      volumes:
+        - .:/application
+      environment:
+        - MYSQL_ROOT_PASSWORD=app_root_password
+        - MYSQL_DATABASE=app_database
+        - MYSQL_USER=app_user
+        - MYSQL_PASSWORD=app_password
+      ports:
+        - "8082:3306"
+
+    postgres:
+      image: postgres:latest
+      container_name: ib-postgres
+      working_dir: /application
+      volumes:
+        - .:/application
+      environment:
+        - POSTGRES_USER=app_user
+        - POSTGRES_PASSWORD=app_password
+        - POSTGRES_DB=app_database
+
+    mongo:
+      image: mongo
+      ports:
+        - "27017:27017"
+      volumes:
+        - .:/application
+
+    elasticsearch:
+      image: elasticsearch:5.4-alpine
+      container_name: ib-elasticsearch
+
+    webserver:
+      image: nginx:alpine
+      container_name: ib-webserver
+      working_dir: /application
+      volumes:
+          - .:/application
+          - ./phpdocker/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      ports:
+       - "8080:80"
+
+    php-fpm:
+      build: phpdocker/php-fpm
+      container_name: ib-php-fpm
+      working_dir: /application
+      volumes:
+        - .:/application
+        - ./phpdocker/php-fpm/php-ini-overrides.ini:/etc/php/7.2/fpm/conf.d/99-overrides.ini
